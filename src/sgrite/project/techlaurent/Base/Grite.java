@@ -21,7 +21,7 @@ import sgrite.project.techlaurent.export.AllMatrix;
 import sgrite.project.techlaurent.export.BoolMatrix;
 
 /**
- *
+ *Implementtaion of Method Grite
  * @author The class encapsulates and optimisation of implementation of the
  * Grite algorithm to compute Gradual frequent itemsets .
  * @author tabueu Fotso laurent, University of DSCHANG, 2017

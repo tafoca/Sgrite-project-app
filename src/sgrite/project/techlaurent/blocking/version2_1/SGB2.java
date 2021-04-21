@@ -1,5 +1,7 @@
-package sgrite.project.techlaurent.Base;
+package sgrite.project.techlaurent.blocking.version2_1;
 
+import sgrite.project.techlaurent.blocking.*;
+import sgrite.project.techlaurent.Base.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,15 +11,15 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import sgrite.project.techlaurent.Base.composants.ScriteComposant;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sgrite.project.techlaurent.common.CommonMethod;
 
 /**
- *
+ *Implementtaion of Method SGB2 of SGrite
  * @author The class encapsulates and optimisation of implementation of the
  * Grite algorithm to compute Gradual frequent itemsets .
  * @author tabueu Fotso laurent, University of DSCHANG, 2017
@@ -26,7 +28,7 @@ import sgrite.project.techlaurent.common.CommonMethod;
  * subsequent users.
  *
  */
-public class GritestrictAppSG1 extends CommonMethod {
+public class SGB2 extends CommonMethod {
 
     private Tools myTools;
     /*
@@ -34,7 +36,7 @@ public class GritestrictAppSG1 extends CommonMethod {
      */
     private static int nbitems = 0;
     private int nbtransaction = 0;
-    private double threshold = AppConstants.THREHOLD;//0.01, 0.05; 0.2 default value
+    private double threshold = (float) AppConstants.THREHOLD; // 0.2 default value
     /**
      * the list of current itemsets
      */
@@ -45,7 +47,6 @@ public class GritestrictAppSG1 extends CommonMethod {
      */
     private String transaFile;
     ArrayList<boolean[][]> allContengent = new ArrayList<>();
-    //   ArrayList<int[]> memories = new ArrayList<>(); //list prevouis memory to uss 
     ArrayList<boolean[][]> computeAllContengent = new ArrayList<>();
     ArrayList<ArrayList<Integer>> isolated_matixs = new ArrayList<>();
     ArrayList<Integer> tmpListIsolatedObj = new ArrayList<>();// contains any
@@ -75,20 +76,19 @@ public class GritestrictAppSG1 extends CommonMethod {
     ArrayList<Integer> removedindex;
     private int niveau = 0;
     private int numberPatterns = 0;
-    private String outputfile = "out_GritestrictAppSG1.dat";
+    private String outputfile = "out_SGB_2_1_file.dat";
     double min = AppConstants.MIN;
     double max = AppConstants.MAX;
     double pas = AppConstants.STEP;
-    // Map<Integer,List<ScriteComposant>> mapOfLevelAndSgriteComponent= new Hashtable<>();
-    public String memoryusedcsv = "MemorySG1";
+    public String memoryusedcsv="MemorySGB2";
 
-     public GritestrictAppSG1() throws IOException {
+    public SGB2() throws IOException {
         super();
         myTools = new Tools();
         myTools.initParameter(transafile);
-        taille = myTools.nbTransaction;
-        this.nbtransaction = myTools.nbTransaction;
-        nbitems = myTools.itemNembers;
+        taille = myTools.getNbTransaction();
+        this.nbtransaction = myTools.getNbTransaction();;
+        nbitems = myTools.getItemNembers();
         this.a = nbitems;
         GrdItem = new SolutionMap();
         // construct db
@@ -96,28 +96,27 @@ public class GritestrictAppSG1 extends CommonMethod {
         this.itemsets = getDataSet();
         // end of construction db
         this.item = null;
-        this.dataset = GritestrictAppSG1.duplique(itemsets);
+        this.dataset = SGB2.duplique(itemsets);
         // Grite.affiche(dataset);
         FileWriter fw = new FileWriter(new File(outputfile));
-        fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
+                fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n"); 
         fw.flush();
         fw.write("\n");
         fw.flush();
         FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
-       exec(fw, fw3);
+        exec(fw,fw3);
 
         //dataForDrawGraphe(min, max, pas);
     }
 
-    public GritestrictAppSG1(String source) throws IOException {
+    public SGB2(String source) throws IOException {
         super();
         this.transaFile = source;
         myTools = new Tools();
-        //System.out.println("sgrite.project.techlaurent.Base.GritestrictAppr2.<init>()"+ source);
         myTools.initParameter(source);
-        taille = myTools.nbTransaction;
-        this.nbtransaction = myTools.nbTransaction;
-        nbitems = myTools.itemNembers;
+        taille = myTools.getNbTransaction();
+        this.nbtransaction = myTools.getNbTransaction();;
+        nbitems = myTools.getItemNembers();
         this.a = nbitems;
         GrdItem = new SolutionMap();
         // construct db
@@ -125,15 +124,14 @@ public class GritestrictAppSG1 extends CommonMethod {
         this.itemsets = getDataSet(source);
         // end of construction db
         this.item = null;
-        this.dataset = GritestrictAppSG1.duplique(itemsets);
+        this.dataset = SGB2.duplique(itemsets);
         // Grite.affiche(dataset);
-        FileWriter fw = new FileWriter(new File(outputfile), true);
-        fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
+        FileWriter fw = new FileWriter(new File(outputfile));
+                fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n"); 
         fw.flush();
         fw.write("\n");
         fw.flush();
-        FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
-        //exec(fw,fw3);
+        //exec(fw);
 
         dataForDrawGraphe(min, max, pas);
     }
@@ -172,14 +170,13 @@ public class GritestrictAppSG1 extends CommonMethod {
         } finally {
         }
     }
-
-    private void wrtiteStatisticMemoryInfo(double seuil, int nbitems2, int nbtransaction2, double occupation, int numberPatterns2,
+     private void wrtiteStatisticMemoryInfo(double seuil, int nbitems2, int nbtransaction2, double occupation, int numberPatterns2,
             FileWriter fw) throws IOException {
 
         try {
             String sep = "       ";
 
-            fw.write(seuil + sep + occupation + sep + "\n");
+            fw.write(seuil + sep + occupation + sep  + "\n");
             fw.flush();
 
         } finally {
@@ -188,17 +185,16 @@ public class GritestrictAppSG1 extends CommonMethod {
 
     public void dataForDrawGraphe(double min, double max, double pas) throws IOException {
         FileWriter fw = new FileWriter(new File(outputfile));
-        fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
+                fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n"); 
         fw.flush();
         fw.write("\n");
         fw.flush();
-        FileWriter fw3 = new FileWriter(new File(memoryusedcsv), true);
+         FileWriter fw3 = new FileWriter(new File(memoryusedcsv), true);
         for (double i = min; i <= max; i = (i + pas)) {
             threshold = i;
-            exec(fw, fw3);
+            exec(fw,fw3);
+            //emptyGroupSet();
             AppConstants.USEDMEMORY=0;
-           // emptyGroupSet();
-
         }
         fw.close();
     }
@@ -209,25 +205,41 @@ public class GritestrictAppSG1 extends CommonMethod {
        
     }
 
+
     /**
      * @param fw2
      * @category forage method
      */
-    public void exec(FileWriter fw2, FileWriter fw3) {
+    public void exec(FileWriter fw2,FileWriter fw3) {
         double startTime = System.currentTimeMillis();
         allContengent = createGradualsItemsetsOfSize1(dataset, item, a, taille);
-        initialisationOfMaxMemUsed();
+         initialisationOfMaxMemUsed();
         //System.out.println("1. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
         //System.out.println("1. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
         //GrdItem.put("level " + getNiveau(), semantique);
         //System.out.println("level " + getNiveau() + "-------");
-        printPatternConsole();
+        int i0 = 0;
+        for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
+            boolean[][] is = (boolean[][]) iterator.next();
+            myTools.setSizeMat(is.length);
+            myTools.initMemory();
+            int[] memory = myTools.memory;
+//            System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
+//                    + myTools.maximumSupport(is/* , semantique.get(i) */, memory) + " )" + " <----------- ");
+//            // affiche(is);
+//            System.out.println();
+//            System.out.println(isolated_matixs.get(i0));
+//            System.out.println();
+//            System.out.println("--------------------------------- size (" + is.length + " )");
+            i0++;
+
+        }
 
         //TODO 1 : create Graduals 2-Itemsets First with first item positif (write a method)
         allContengent = genGradual2Itemsets();
-        initialisationOfMaxMemUsed();
+         initialisationOfMaxMemUsed();
         //System.out.println("2. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-        // System.out.println("2. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
+       // System.out.println("2. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
 
 		// myTools.setSizeMat(allContengent.get(0).length);
         // myTools.initMemory();
@@ -239,38 +251,40 @@ public class GritestrictAppSG1 extends CommonMethod {
          */
         // affiche(allContengent.get(0));
         //GrdItem.put("level " + getNiveau(), semantique);
-        // System.out.println("level " + getNiveau() + "-------");
-//        int i = 0;
-//        for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-//            boolean[][] is = iterator.next();
-//            myTools.setSizeMat(is.length);
-//            myTools.initMemory();
-//            int[] memory = myTools.memory;
-//            //TODO COMMENT CONSOLE PRINT
-//           /* System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i)) + "( "
-//             + determinerSupport1(is, memory) + " )" + " <----------- ");*/
+        //System.out.println("level " + getNiveau() + "-------");
+        int i = 0;
+        for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
+            boolean[][] is = iterator.next();
+            myTools.setSizeMat(is.length);
+            myTools.initMemory();
+            int[] memory = myTools.memory;
+           // String item = myTools.printGrad_Itemset(semantique.get(i));
+           // int supp = determinerSupport1(is, memory);
+
+            //ecrituremotifSupport(supp, item, "output_bock_1.csv");
+//            System.out.println(" -------> " + item + "( " + supp + " )" + " <----------- ");
 //            // affiche(is);
-//           /* System.out.println();
-//             System.out.println(isolated_matixs.get(i));
-//             System.out.println();
-//             System.out.println("--------------------------------- size (" + is.length + " )");*/
-//            i++;
-//
-//        }
+//            System.out.println();
+//            System.out.println(isolated_matixs.get(i));
+//            System.out.println();
+//            System.out.println("--------------------------------- size (" + is.length + " )");
+            i++;
+
+        }
         for (int m = 1; m < attrList.length; m++) {
             allContengent = grite_execution();
             initialisationOfMaxMemUsed();
-        //System.out.println("3+ Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-            //System.out.println("3+. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
+            // System.out.println("3+ Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
+             //System.out.println("3+ Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
             if (allContengent.size() > 0) {
                 //GrdItem.put("level " + getNiveau(), semantique);
-                //  System.out.println("level " + getNiveau() + "-------");
+               // System.out.println("level " + getNiveau() + "-------");
                 // Grite.affiche(allContengent.get(0));
                 // System.out.println("---- Grite.Grite()---- " +
                 // allContengent.size() + "***" + semantique.size());
                 // System.out.println("***" + GrdItem.toString());
 
-               /* int i1 = 0;
+                /* int i1 = 0;
                 for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
                     boolean[][] is1 = iterator.next();
                     myTools.setSizeMat(is1.length);
@@ -285,7 +299,6 @@ public class GritestrictAppSG1 extends CommonMethod {
                     i1++;
 
                 }*/
-
             }
         }
 
@@ -296,35 +309,22 @@ public class GritestrictAppSG1 extends CommonMethod {
         System.out.println("Used memory is megabytes: " + AppConstants.USEDMEMORY);
         try {
             wrtiteStatistic(threshold, nbitems, nbtransaction, duree, getNumberPatterns(), fw2);
-            wrtiteStatisticMemoryInfo(threshold, nbitems, nbtransaction, AppConstants.USEDMEMORY, getNumberPatterns(), fw3);
+             wrtiteStatisticMemoryInfo(threshold, nbitems, nbtransaction, AppConstants.USEDMEMORY, getNumberPatterns(), fw3);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    public void initialisationOfMaxMemUsed() {
+     public void initialisationOfMaxMemUsed() {
         if (AppConstants.USEDMEMORY < MemoryPerformance.getMemoryCurrentMB()) {
             AppConstants.USEDMEMORY = MemoryPerformance.getMemoryCurrentMB();
         }
     }
 
-    public void printPatternConsole() {
-        int i0 = 0;
-        for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-            boolean[][] is = (boolean[][]) iterator.next();
-            myTools.setSizeMat(is.length);
-            myTools.initMemory();
-            int[] memory = myTools.memory;
-            //TODO COMMENT CONSOLE PRINT
-            //System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
-            //       + myTools.maximumSupport(is/* , semantique.get(i) */, memory) + " )" + " <----------- ");
-            // affiche(is);
-           /* System.out.println();
-             System.out.println(isolated_matixs.get(i0));
-             System.out.println();
-             System.out.println("--------------------------------- size (" + is.length + " )");*/
-            i0++;
-
+    public void ecrituremotifSupport(int supp, String item1, String output_bock_1csv) {
+        try {
+            WriteOutPutManager.wrtiteSupportItem(supp, item1, (float) threshold, output_bock_1csv);
+        } catch (IOException ex) {
+            Logger.getLogger(SGB2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -374,7 +374,7 @@ public class GritestrictAppSG1 extends CommonMethod {
 
     }
 
-    /**
+       /**
      *
      * @return Dataset into transaction Data Source
      * @throws IOException
@@ -427,6 +427,7 @@ public class GritestrictAppSG1 extends CommonMethod {
         }
     }
 
+
     public static float[][] duplique(ArrayList<float[]> mat) {
         float[][] res = new float[mat.size()][];
         for (int i = 0; i < mat.size(); i++) {
@@ -458,12 +459,12 @@ public class GritestrictAppSG1 extends CommonMethod {
 
     // a is item number a
     public static float[] getDataColByCol(float[][] dataset, float[] item, int a, int taille) {
-        taille = GritestrictAppSG1.taille;
+        taille = SGB2.taille;
         item = new float[taille];
         int l = 0;
         for (int i = 0; i < dataset.length; i++) {
 
-            for (int k = 0; k < GritestrictAppSG1.nbitems; k++) {
+            for (int k = 0; k < SGB2.nbitems; k++) {
                 if (l == i && k == a) {
                     item[i] = dataset[i][k];
                     // System.out.println(item[i]+ " ");
@@ -477,8 +478,8 @@ public class GritestrictAppSG1 extends CommonMethod {
     }
 
     public static void getAllColum(float[][] dataset, float[] item, int a, int taille) {
-        for (a = 0; a < GritestrictAppSG1.nbitems; a++) {
-            float[] rescol = GritestrictAppSG1.getDataColByCol(dataset, item, a, taille);
+        for (a = 0; a < SGB2.nbitems; a++) {
+            float[] rescol = SGB2.getDataColByCol(dataset, item, a, taille);
             for (int i = 0; i < rescol.length; i++) {
                 System.out.println(rescol[i] + "  ");
             }
@@ -496,13 +497,15 @@ public class GritestrictAppSG1 extends CommonMethod {
      */
     private ArrayList<boolean[][]> createGradualsItemsetsOfSize1(float[][] dataset, float[] item, int a, int taille) {
         ArrayList<boolean[][]> allContengent = new ArrayList<>();
-        ArrayList<int[]> memories = new ArrayList<>();
         ArrayList<String[]> semantique = new ArrayList<>();
+
         ArrayList<ArrayList<Integer>> isolated_matix = new ArrayList<>();
-        //  List<ScriteComposant> scriteComposants = new ArrayList<>();
+        // ArrayList<Integer> mySupports = new ArrayList<>();
+        // builditemGradual(isolated_matix);
+
         ArrayList<Integer> listobj = new ArrayList<>();
         for (int i = 0; i < nbitems; i++) {
-            float[] rescol = GritestrictAppSG1.getDataColByCol(dataset, item, i, taille);
+            float[] rescol = SGB2.getDataColByCol(dataset, item, i, taille);
             String[] attr = new String[2];
             attr[0] = attrList[i];
             attr[1] = "-";
@@ -510,6 +513,7 @@ public class GritestrictAppSG1 extends CommonMethod {
             attr1[0] = attrList[i];
             attr1[1] = "+";
             boolean[][] Contengence2 = new boolean[taille][taille];
+
             // gestion objets croissant X> et creation matrice contigence
             // associe
             boolean[][] Contengence1 = new boolean[taille][taille];
@@ -518,40 +522,38 @@ public class GritestrictAppSG1 extends CommonMethod {
             myTools.initMemory();
             int[] memory = myTools.memory;
             int cpt = determinerSupport1(Contengence1, memory);
+
+            // System.err.println("support level 0: " + cpt);
             float support = Utilitaire.supportCalculation(cpt, Contengence1.length);
+            // float support = myTools.supportCalculation(cpt, Contengence1.length);
             if (support > this.threshold) {
                 Contengence2 = transposition(Contengence1);
+
                 listobj = getIsolateObjet(Contengence1);
                 isolated_matix.add(listobj);
+
                 boolean[][] mmoins = MatrixNormalizer(Contengence1, listobj);
+
                 allContengent.add(mmoins);
                 semantique.add(attr);
+
                 ArrayList<Integer> listobj1 = getIsolateObjet(Contengence2);
                 isolated_matix.add(listobj1);
                 boolean[][] mplus = MatrixNormalizer(Contengence2, listobj1);
                 allContengent.add(mplus);
                 semantique.add(attr1);
-
-                // insertAnSgriteComonentAlist(scriteComposants, attr, mmoins, listobj, attr1, mplus, listobj1);       
             }
+
         }
-        //mapOfLevelAndSgriteComponent.putIfAbsent(getNiveau()+1, scriteComposants);
+
         setNiveau(getNiveau() + 1);
        //GrdItem.put("level" + getNiveau(), semantique);
         setNumberPatterns(getNumberPatterns() + semantique.size());
         isolated_matixs.clear();
         isolated_matixs = isolated_matix;
-        GritestrictAppSG1.semantique = semantique;
+        SGB2.semantique = semantique;
         return allContengent;
-    }
 
-    public void insertAnSgriteComonentAlist(List<ScriteComposant> scriteComposants, String[] attr, boolean[][] mmoins, ArrayList<Integer> listobj, String[] attr1, boolean[][] mplus, ArrayList<Integer> listobj1) {
-        scriteComposants.add(new ScriteComposant(attr, mmoins, listobj));
-        scriteComposants.add(new ScriteComposant(attr1, mplus, listobj1));
-    }
-
-    public void insertAnSgriteComonentAlist(List<ScriteComposant> scriteComposants, String[] motif, boolean[][] adj, ArrayList<Integer> listobj) {
-        scriteComposants.add(new ScriteComposant(motif, adj, listobj));
     }
 
     /**
@@ -562,13 +564,11 @@ public class GritestrictAppSG1 extends CommonMethod {
      */
     private ArrayList<boolean[][]> genGradual2Itemsets() {
 
-        //List<ScriteComposant> scriteComposants = new ArrayList<>();
         ArrayList<boolean[][]> computeAllContengent = new ArrayList<>();
 
         ArrayList<String[]> semantiques = new ArrayList<>();
 
         ArrayList<ArrayList<Integer>> isolated_matix = new ArrayList<>();
-     //   ArrayList<int[]> buildMemories = new ArrayList<>();
 
         // ArrayList<Integer> mySupport = new ArrayList<>();
         String[] tmp1;
@@ -580,10 +580,8 @@ public class GritestrictAppSG1 extends CommonMethod {
         int cpt;
         float support;
 
-        // System.out.println(allContengent.size() + "\n");
-        //TODO ajouter la strategy de generation des candidats ici
-        //1- utilisation d'une map pour stocker les candidats par niveau
-        //2- de meme pour les objets isoles et les matrices d'adjacence
+       // System.out.println(allContengent.size() + "\n");
+
         for (int i = 0; i < allContengent.size(); i++) {
             for (int j = i + 1; j < allContengent.size(); j++) {
                 String[] item_g = semantique.get(i);
@@ -598,16 +596,17 @@ public class GritestrictAppSG1 extends CommonMethod {
 
                     myTools.initMemory();
                     int[] memory = myTools.memory;
+
                     cpt = determinerSupport1(tmp, memory);
+                    //System.err.println("support: " + cpt);
                     support = Utilitaire.supportCalculation(cpt, taille);
+
                     if (support >= this.threshold) {
                         computeAllContengent.add(tmp);
                         tmp1 = myTools.lexicalFusion(semantique.get(i), semantique.get(j));
                         semantiques.add(tmp1);
                         listobj = (ArrayList<Integer>) tmp2.get(1);
                         isolated_matix.add(listobj);
-//                        buildMemories.add(memory);
-                        // insertAnSgriteComonentAlist(scriteComposants,tmp1,tmp,listobj); 
 
                     }
 
@@ -627,74 +626,8 @@ public class GritestrictAppSG1 extends CommonMethod {
         semantique = semantiques;
 
         isolated_matixs = isolated_matix;
-        //memories = buildMemories;
 
         setNiveau(niveau + 1);
-
-        //GrdItem.put("level" + getNiveau(), semantiques);
-        //  mapOfLevelAndSgriteComponent.putIfAbsent(niveau, scriteComposants);
-
-        setNumberPatterns(getNumberPatterns() + semantiques.size());
-
-        return computeAllContengent;
-    }
-
-    /**
-     * Compute support of more than 2 items size
-     *
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    public ArrayList<boolean[][]> grite_execution() {
-        // List<ScriteComposant> scriteComposants = new ArrayList<>();
-        // createGradualsItemsetsOfSize1();
-        ArrayList<boolean[][]> computeAllContengent = new ArrayList<>();
-
-        ArrayList<String[]> semantiques = new ArrayList<>();
-
-        ArrayList<ArrayList<Integer>> isolated_matix = new ArrayList<>();
-      //  ArrayList<int[]> buildMemories = new ArrayList<>();
-
-        // ArrayList<Integer> mySupport = new ArrayList<>();
-        String[] tmp1;
-
-        ArrayList<Integer> listobj;
-
-        ArrayList<Object> tmp2 = new ArrayList<>();
-
-        int cpt;
-        float support;
-
-        // System.out.println(allContengent.size() + "\n");
-        for (int i = 0; i < allContengent.size(); i++) {
-            for (int j = i + 1; j < allContengent.size(); j++) {
-                //if concatanable the 2 patterns
-                if (myTools.lexicalComparaison(semantique.get(i), semantique.get(j))) {
-                    tmp2 = jointure(allContengent.get(i), allContengent.get(j), isolated_matixs.get(i),
-                            isolated_matixs.get(j), semantique.get(i), semantique.get(j));
-                    //adj normalise matrix of fusion
-                    boolean[][] tmp = (boolean[][]) tmp2.get(0);
-                    buildNextCandidat(tmp, computeAllContengent, i, j, semantiques, tmp2, isolated_matix);
-                }
-
-            }
-        }
-
-        allContengent.clear();
-        semantique.clear();
-
-        isolated_matixs.clear();
- //       memories = buildMemories;
-
-        // determination frequent itemset
-        allContengent = computeAllContengent;
-
-        semantique = semantiques;
-
-        isolated_matixs = isolated_matix;
-
-        setNiveau(niveau + 1);
-        //   mapOfLevelAndSgriteComponent.putIfAbsent(niveau, scriteComposants);
 
         //GrdItem.put("level" + getNiveau(), semantiques);
 
@@ -703,41 +636,128 @@ public class GritestrictAppSG1 extends CommonMethod {
         return computeAllContengent;
     }
 
-    /**
-     *
-     * @param tmp fusion resultant matrix
-     * @param computeAllContengent1 all adjacente matrix
-     * @param i index of M1
-     * @param j index position position of M2
-     * @param semantiques all freq courant pattern
-     * @param tmp2 struct of adjM and IsolateM
-     * @param isolated_matix all isolate objects
-     * @param buildMemories all memory previous
+    /*private void builditemGradual(ArrayList<ArrayList<Integer>> isolated_matix) {
+
+     ArrayList<Integer> listobj = new ArrayList<>();
+     for (int i = 0; i < nbitems; i++) {
+     float[] rescol = Gritestrict.getDataColByCol(dataset, item, i, taille);
+     String[] attr = new String[2];
+     attr[0] = attrList[i];
+     attr[1] = "-";
+     String[] attr1 = new String[2];
+     attr1[0] = attrList[i];
+     attr1[1] = "+";
+     boolean[][] Contengence2 = new boolean[taille][taille];
+
+     // gestion objets croissant X> et creation matrice contigence
+     // associe
+     boolean[][] Contengence1 = new boolean[taille][taille];
+
+     for (int j = 0; j < taille; j++) {
+
+     Contengence1[j][j] = false;
+     }
+
+     for (int j = 0; j < taille; j++) {
+     for (int j2 = 0; j2 < taille; j2++) {
+     if (j != j2) {
+     if (rescol[j] < rescol[j2]) {
+     Contengence1[j][j2] = true;
+     } else {
+     Contengence1[j][j2] = false;
+     }
+     }
+
+     }
+     }
+     myTools.setSizeMat(Contengence1.length);
+     myTools.initMemory();
+     int[] memory = myTools.memory;
+     int cpt = myTools.maximumSupport(Contengence1 , attr , memory);
+     float support = myTools.supportCalculation(cpt, Contengence1.length);
+     if (support > this.threshold) {
+     Contengence2 = transposition(Contengence1);
+
+     listobj = getIsolateObjet(Contengence1);
+     isolated_matix.add(listobj);
+
+     boolean[][] mmoins = MatrixNormalizer(Contengence1, listobj);
+
+     allContengent.add(mmoins);
+     semantique.add(attr);
+
+     listobj = getIsolateObjet(Contengence2);
+     isolated_matix.add(listobj);
+     boolean[][] mplus = MatrixNormalizer(Contengence2, listobj);
+     allContengent.add(mplus);
+     semantique.add(attr1);
+     }
+
+     }
+
+     }
+     /*private void builditemGradual(ArrayList<ArrayList<Integer>> isolated_matix) {
+
+     ArrayList<Integer> listobj = new ArrayList<>();
+     for (int i = 0; i < nbitems; i++) {
+     float[] rescol = Gritestrict.getDataColByCol(dataset, item, i, taille);
+     String[] attr = new String[2];
+     attr[0] = attrList[i];
+     attr[1] = "-";
+     String[] attr1 = new String[2];
+     attr1[0] = attrList[i];
+     attr1[1] = "+";
+     boolean[][] Contengence2 = new boolean[taille][taille];
+
+     // gestion objets croissant X> et creation matrice contigence
+     // associe
+     boolean[][] Contengence1 = new boolean[taille][taille];
+
+     for (int j = 0; j < taille; j++) {
+
+     Contengence1[j][j] = false;
+     }
+
+     for (int j = 0; j < taille; j++) {
+     for (int j2 = 0; j2 < taille; j2++) {
+     if (j != j2) {
+     if (rescol[j] < rescol[j2]) {
+     Contengence1[j][j2] = true;
+     } else {
+     Contengence1[j][j2] = false;
+     }
+     }
+
+     }
+     }
+     myTools.setSizeMat(Contengence1.length);
+     myTools.initMemory();
+     int[] memory = myTools.memory;
+     int cpt = myTools.maximumSupport(Contengence1 , attr , memory);
+     float support = myTools.supportCalculation(cpt, Contengence1.length);
+     if (support > this.threshold) {
+     Contengence2 = transposition(Contengence1);
+
+     listobj = getIsolateObjet(Contengence1);
+     isolated_matix.add(listobj);
+
+     boolean[][] mmoins = MatrixNormalizer(Contengence1, listobj);
+
+     allContengent.add(mmoins);
+     semantique.add(attr);
+
+     listobj = getIsolateObjet(Contengence2);
+     isolated_matix.add(listobj);
+     boolean[][] mplus = MatrixNormalizer(Contengence2, listobj);
+     allContengent.add(mplus);
+     semantique.add(attr1);
+     }
+
+     }
+
+     }
+
      */
-    public void buildNextCandidat(boolean[][] tmp, ArrayList<boolean[][]> computeAllContengent1, int i, int j, ArrayList<String[]> semantiques, ArrayList<Object> tmp2, ArrayList<ArrayList<Integer>> isolated_matix) {
-        int cpt;
-        float support;
-        String[] tmp1;
-        ArrayList<Integer> listobj;
-
-        //TODO integration of new approach of computation of support 
-        myTools.setSizeMat(tmp.length);
-        myTools.initMemory();
-        int[] memory = myTools.memory;
-        cpt = determinerSupport(tmp, memory);
-        // System.err.println("support : " + cpt);
-        support = Utilitaire.supportCalculation(cpt, taille);
-        if (support >= this.threshold) {
-            computeAllContengent1.add(tmp);
-            tmp1 = myTools.lexicalFusion(semantique.get(i), semantique.get(j));
-            semantiques.add(tmp1);
-            listobj = (ArrayList<Integer>) tmp2.get(1);
-            isolated_matix.add(listobj);
-            // buildMemories.add(memory);
-            // insertAnSgriteComonentAlist(scriteComposants,tmp1,tmp,listobj); 
-        }
-    }
-
     /**
      * determiner le support d'une matrice
      *
@@ -781,7 +801,7 @@ public class GritestrictAppSG1 extends CommonMethod {
      */
     public ArrayList<Integer> listingParticipateObjets(ArrayList<Integer> objet_supp) {
         ArrayList<Integer> malist = new ArrayList<>();
-        for (int i = 0; i < GritestrictAppSG1.taille; i++) {
+        for (int i = 0; i < SGB2.taille; i++) {
             int p = myTools.Recherche(objet_supp, i);
             if (p != -1) {
                 malist.add(p);
@@ -792,7 +812,7 @@ public class GritestrictAppSG1 extends CommonMethod {
 
     public ArrayList<Integer> listingComplement(ArrayList<Integer> objet_supp) {
         ArrayList<Integer> malist = new ArrayList<>();
-        for (int i = 0; i < GritestrictAppSG1.taille; i++) {
+        for (int i = 0; i < SGB2.taille; i++) {
             int p = myTools.Recherche(objet_supp, i);
             if (p == -1) {
                 malist.add(i);
@@ -998,7 +1018,7 @@ public class GritestrictAppSG1 extends CommonMethod {
      * @param taille the taille to set
      */
     public void setTaille(int taille) {
-        GritestrictAppSG1.taille = taille;
+        SGB2.taille = taille;
     }
 
     /**
@@ -1012,7 +1032,7 @@ public class GritestrictAppSG1 extends CommonMethod {
      * @param attrList the attrList to set
      */
     public static void setAttrList(String[] attrList) {
-        GritestrictAppSG1.attrList = attrList;
+        SGB2.attrList = attrList;
     }
 
     private boolean IsItIsolateItem(boolean[][] m, int objet) {
@@ -1104,6 +1124,91 @@ public class GritestrictAppSG1 extends CommonMethod {
         }
         return result;
 
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList<boolean[][]> grite_execution() {
+        // createGradualsItemsetsOfSize1();
+        ArrayList<boolean[][]> computeAllContengent = new ArrayList<>();
+
+        ArrayList<String[]> semantiques = new ArrayList<>();
+
+        ArrayList<ArrayList<Integer>> isolated_matix = new ArrayList<>();
+
+        // ArrayList<Integer> mySupport = new ArrayList<>();
+        String[] tmp1;
+
+        ArrayList<Integer> listobj;
+
+        ArrayList<Object> tmp2 = new ArrayList<>();
+
+        int cpt;
+        float support;
+
+       // System.out.println(allContengent.size() + "\n");
+
+        for (int i = 0; i < allContengent.size(); i++) {
+            for (int j = i + 1; j < allContengent.size(); j++) {
+                //affiche(allContengent.get(i));
+                //System.out.println("\n--------------------------\n");
+                //affiche(allContengent.get(j));
+                // System.out.println("1: " +
+                // myTools.printGrad_Itemset(semantique.get(i)) + " 2: "
+                // + myTools.printGrad_Itemset(semantique.get(j)));
+                if (myTools.lexicalComparaison(semantique.get(i), semantique.get(j))) {
+                    // System.out.println("after test 1: " +
+                    // myTools.printGrad_Itemset(semantique.get(i)) + " 2: "
+                    // + myTools.printGrad_Itemset(semantique.get(j)));
+
+                    tmp2 = jointure(allContengent.get(i), allContengent.get(j), isolated_matixs.get(i),
+                            isolated_matixs.get(j), semantique.get(i), semantique.get(j));
+
+                    boolean[][] tmp = (boolean[][]) tmp2.get(0);
+
+                    myTools.setSizeMat(tmp.length);
+
+                    myTools.initMemory();
+                    int[] memory = myTools.memory;
+
+//                    cpt = myTools.maximumSupport(tmp/* , tmp1 */, memory);
+//                    support = myTools.supportCalculation(cpt, taille);
+                    //new approche
+                    cpt = determinerSupport(tmp, memory);
+                    //System.err.println("support level 1 + : " + cpt);
+                    support = Utilitaire.supportCalculation(cpt, taille);
+                    if (support >= this.threshold) {
+                        computeAllContengent.add(tmp);
+                        tmp1 = myTools.lexicalFusion(semantique.get(i), semantique.get(j));
+                        semantiques.add(tmp1);
+                        listobj = (ArrayList<Integer>) tmp2.get(1);
+                        isolated_matix.add(listobj);
+
+                    }
+
+                }
+
+            }
+        }
+
+        allContengent.clear();
+        semantique.clear();
+
+        isolated_matixs.clear();
+
+        // determination frequent itemset
+        allContengent = computeAllContengent;
+
+        semantique = semantiques;
+
+        isolated_matixs = isolated_matix;
+
+        setNiveau(niveau + 1);
+
+        //GrdItem.put("level" + getNiveau(), semantiques);
+
+        setNumberPatterns(getNumberPatterns() + semantiques.size());
+
+        return computeAllContengent;
     }
 
     /**
@@ -1234,8 +1339,8 @@ public class GritestrictAppSG1 extends CommonMethod {
     public static void main(String[] args) throws IOException {
         // TODO Auto-generated method stub
         // float[] item = new float[9];
-        //GritestrictAppSG1 ap = new GritestrictAppSG1();
-        GritestrictAppSG1 ap = new GritestrictAppSG1(args[0]);
+        //GritestrictAppr2 ap = new SGB2();
+        SGB2 ap = new SGB2(args[0]);
         /*
          * ap.getconfig(); ArrayList<float[]> itemsets = ap.itemsets;
          */
