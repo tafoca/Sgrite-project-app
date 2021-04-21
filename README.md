@@ -16,7 +16,6 @@ nbproject / configs / VersionRBISGOpt.properties.
 # Description of Runtime
 ## Environment
 The java support environment is the version 8 (JDK 8) 
-========================
 BUILD OUTPUT DESCRIPTION
 ========================
 When you build an Java application project that has a main class, the IDE
