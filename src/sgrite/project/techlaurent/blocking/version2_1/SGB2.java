@@ -19,7 +19,8 @@ import java.util.logging.Logger;
 import sgrite.project.techlaurent.common.CommonMethod;
 
 /**
- *Implementtaion of Method SGB2 of SGrite
+ * Implementtaion of Method SGB2 of SGrite
+ *
  * @author The class encapsulates and optimisation of implementation of the
  * Grite algorithm to compute Gradual frequent itemsets .
  * @author tabueu Fotso laurent, University of DSCHANG, 2017
@@ -76,12 +77,11 @@ public class SGB2 extends CommonMethod {
     ArrayList<Integer> removedindex;
     private int niveau = 0;
     private int numberPatterns = 0;
-    private String outputfile = "out_SGB_2_1_file.dat";
+    private String outputfile = "TimeSGB2";
     double min = AppConstants.MIN;
     double max = AppConstants.MAX;
     double pas = AppConstants.STEP;
-    public String memoryusedcsv="MemorySGB2";
-
+    public String memoryusedcsv = "MemorySGB2";
     public SGB2() throws IOException {
         super();
         myTools = new Tools();
@@ -99,21 +99,19 @@ public class SGB2 extends CommonMethod {
         this.dataset = SGB2.duplique(itemsets);
         // Grite.affiche(dataset);
         FileWriter fw = new FileWriter(new File(outputfile));
-                fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n"); 
+        fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
         fw.flush();
-        fw.write("\n");
+       // fw.write("\n");
         fw.flush();
         FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
-        exec(fw,fw3);
-
+        exec(fw, fw3);
         //dataForDrawGraphe(min, max, pas);
     }
-
-    public SGB2(String source) throws IOException {
+    public SGB2(String[] params) throws IOException {
         super();
-        this.transaFile = source;
+        this.transaFile = params[0];
         myTools = new Tools();
-        myTools.initParameter(source);
+        myTools.initParameter(params[0]);
         taille = myTools.getNbTransaction();
         this.nbtransaction = myTools.getNbTransaction();;
         nbitems = myTools.getItemNembers();
@@ -121,19 +119,20 @@ public class SGB2 extends CommonMethod {
         GrdItem = new SolutionMap();
         // construct db
         getconfig();
-        this.itemsets = getDataSet(source);
+        this.itemsets = getDataSet(params[0]);
         // end of construction db
         this.item = null;
         this.dataset = SGB2.duplique(itemsets);
         // Grite.affiche(dataset);
         FileWriter fw = new FileWriter(new File(outputfile));
-                fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n"); 
+        fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
         fw.flush();
-        fw.write("\n");
+        //fw.write("\n");
         fw.flush();
-        //exec(fw);
-
-        dataForDrawGraphe(min, max, pas);
+        threshold = Double.parseDouble(params[1]);
+        FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
+        exec(fw, fw3);
+        //dataForDrawGraphe(min, max, pas);
     }
 
     public boolean[][] transposition(boolean[][] adjm) {
@@ -170,13 +169,14 @@ public class SGB2 extends CommonMethod {
         } finally {
         }
     }
-     private void wrtiteStatisticMemoryInfo(double seuil, int nbitems2, int nbtransaction2, double occupation, int numberPatterns2,
+
+    private void wrtiteStatisticMemoryInfo(double seuil, int nbitems2, int nbtransaction2, double occupation, int numberPatterns2,
             FileWriter fw) throws IOException {
 
         try {
             String sep = "       ";
 
-            fw.write(seuil + sep + occupation + sep  + "\n");
+            fw.write(seuil + sep + occupation + sep + "\n");
             fw.flush();
 
         } finally {
@@ -185,136 +185,74 @@ public class SGB2 extends CommonMethod {
 
     public void dataForDrawGraphe(double min, double max, double pas) throws IOException {
         FileWriter fw = new FileWriter(new File(outputfile));
-                fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n"); 
+        fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
         fw.flush();
         fw.write("\n");
         fw.flush();
-         FileWriter fw3 = new FileWriter(new File(memoryusedcsv), true);
+        FileWriter fw3 = new FileWriter(new File(memoryusedcsv), true);
         for (double i = min; i <= max; i = (i + pas)) {
             threshold = i;
-            exec(fw,fw3);
+            exec(fw, fw3);
             //emptyGroupSet();
-            AppConstants.USEDMEMORY=0;
+            AppConstants.USEDMEMORY = 0;
         }
         fw.close();
     }
-    private void emptyGroupSet() {
-       semantique.clear();
-       allContengent.clear();
-       isolated_matixs.clear();
-       
-    }
 
+    private void emptyGroupSet() {
+        semantique.clear();
+        allContengent.clear();
+        isolated_matixs.clear();
+    }
 
     /**
      * @param fw2
      * @category forage method
      */
-    public void exec(FileWriter fw2,FileWriter fw3) {
+    public void exec(FileWriter fw2, FileWriter fw3) {
         double startTime = System.currentTimeMillis();
         allContengent = createGradualsItemsetsOfSize1(dataset, item, a, taille);
-         initialisationOfMaxMemUsed();
-        //System.out.println("1. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-        //System.out.println("1. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-        //GrdItem.put("level " + getNiveau(), semantique);
-        //System.out.println("level " + getNiveau() + "-------");
+        initialisationOfMaxMemUsed();
+        printPatternConsole();
+        //TODO 1 : create Graduals 2-Itemsets First with first item positif (write a method)
+        allContengent = genGradual2Itemsets();
+        initialisationOfMaxMemUsed();
+        printPatternConsole();
+        for (int m = 1; m < attrList.length; m++) {
+            allContengent = grite_execution();
+            initialisationOfMaxMemUsed();
+            if (allContengent.size() > 0) {
+                printPatternConsole();
+            }
+        }
+        System.out.println("SGB2.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
+        double duree = (System.currentTimeMillis() - startTime);
+        System.out.println("SGB2.exec() Time execution eguals :" + duree / 1000.0 + " s");
+        System.out.println("SGB2.exec() Memory space ");
+        System.out.println("Used memory is KB: " + AppConstants.USEDMEMORY);
+        try {
+            wrtiteStatistic(threshold, nbitems, nbtransaction, duree, getNumberPatterns(), fw2);
+            wrtiteStatisticMemoryInfo(threshold, nbitems, nbtransaction, AppConstants.USEDMEMORY, getNumberPatterns(), fw3);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printPatternConsole() {
         int i0 = 0;
         for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
             boolean[][] is = (boolean[][]) iterator.next();
             myTools.setSizeMat(is.length);
             myTools.initMemory();
             int[] memory = myTools.memory;
-//            System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
-//                    + myTools.maximumSupport(is/* , semantique.get(i) */, memory) + " )" + " <----------- ");
-//            // affiche(is);
-//            System.out.println();
-//            System.out.println(isolated_matixs.get(i0));
-//            System.out.println();
-//            System.out.println("--------------------------------- size (" + is.length + " )");
+            System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
+                    + myTools.maximumSupport(is, memory) + " )" + " <----------- ");
             i0++;
 
         }
-
-        //TODO 1 : create Graduals 2-Itemsets First with first item positif (write a method)
-        allContengent = genGradual2Itemsets();
-         initialisationOfMaxMemUsed();
-        //System.out.println("2. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-       // System.out.println("2. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-
-		// myTools.setSizeMat(allContengent.get(0).length);
-        // myTools.initMemory();
-		/*
-         * int[] memory0 = myTools.memory;
-         * System.out.println("sons elt 1: "+myTools.getRoots(allContengent.get(
-         * 0))); System.out.println("sons elt 1: "+myTools.maximumSupport(
-         * allContengent.get(0), semantique.get(0), memory0) );
-         */
-        // affiche(allContengent.get(0));
-        //GrdItem.put("level " + getNiveau(), semantique);
-        //System.out.println("level " + getNiveau() + "-------");
-        int i = 0;
-        for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-            boolean[][] is = iterator.next();
-            myTools.setSizeMat(is.length);
-            myTools.initMemory();
-            int[] memory = myTools.memory;
-           // String item = myTools.printGrad_Itemset(semantique.get(i));
-           // int supp = determinerSupport1(is, memory);
-
-            //ecrituremotifSupport(supp, item, "output_bock_1.csv");
-//            System.out.println(" -------> " + item + "( " + supp + " )" + " <----------- ");
-//            // affiche(is);
-//            System.out.println();
-//            System.out.println(isolated_matixs.get(i));
-//            System.out.println();
-//            System.out.println("--------------------------------- size (" + is.length + " )");
-            i++;
-
-        }
-        for (int m = 1; m < attrList.length; m++) {
-            allContengent = grite_execution();
-            initialisationOfMaxMemUsed();
-            // System.out.println("3+ Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-             //System.out.println("3+ Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-            if (allContengent.size() > 0) {
-                //GrdItem.put("level " + getNiveau(), semantique);
-               // System.out.println("level " + getNiveau() + "-------");
-                // Grite.affiche(allContengent.get(0));
-                // System.out.println("---- Grite.Grite()---- " +
-                // allContengent.size() + "***" + semantique.size());
-                // System.out.println("***" + GrdItem.toString());
-
-                /* int i1 = 0;
-                for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-                    boolean[][] is1 = iterator.next();
-                    myTools.setSizeMat(is1.length);
-                    myTools.initMemory();
-                    int[] memory1 = myTools.memory;
-                    //TODO COMMENT CONSOLE PRINT
-                    // System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i1)) + "( " + determinerSupport1(is1, memory1) + " )" + " <----------- ");
-                    // affiche(is1);
-                   /* System.out.println("\n" + isolated_matixs.get(i1));
-                     System.out.println();
-                     System.out.println("---------------------------------");
-                    i1++;
-
-                }*/
-            }
-        }
-
-        System.out.println("Grite.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
-        double duree = (System.currentTimeMillis() - startTime);
-        System.out.println("Grite.exec() Time execution eguals :" + duree / 1000.0 + " s");
-        System.out.println("Grite.exec() Memory space ");
-        System.out.println("Used memory is megabytes: " + AppConstants.USEDMEMORY);
-        try {
-            wrtiteStatistic(threshold, nbitems, nbtransaction, duree, getNumberPatterns(), fw2);
-             wrtiteStatisticMemoryInfo(threshold, nbitems, nbtransaction, AppConstants.USEDMEMORY, getNumberPatterns(), fw3);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
-     public void initialisationOfMaxMemUsed() {
+
+    public void initialisationOfMaxMemUsed() {
         if (AppConstants.USEDMEMORY < MemoryPerformance.getMemoryCurrentMB()) {
             AppConstants.USEDMEMORY = MemoryPerformance.getMemoryCurrentMB();
         }
@@ -338,16 +276,13 @@ public class SGB2 extends CommonMethod {
      */
     private void wrtiteStatistic(Float seuil, int nbitems2, int nbtransaction2, double duree, int numberPatterns2,
             FileWriter fw) throws IOException {
-
         try {
-            String sep = "        ";
+            String sep =AppConstants.SEP;
             for (int i = 0; i < attrList.length; i++) {
                 fw.write(seuil + sep + nbitems2 + sep + nbtransaction2 + sep + (duree / 1000.0) + sep + numberPatterns2
                         + "\n");
                 fw.flush();
-
             }
-
             fw.close();
         } finally {
         }
@@ -374,7 +309,7 @@ public class SGB2 extends CommonMethod {
 
     }
 
-       /**
+    /**
      *
      * @return Dataset into transaction Data Source
      * @throws IOException
@@ -426,7 +361,6 @@ public class SGB2 extends CommonMethod {
 
         }
     }
-
 
     public static float[][] duplique(ArrayList<float[]> mat) {
         float[][] res = new float[mat.size()][];
@@ -547,7 +481,7 @@ public class SGB2 extends CommonMethod {
         }
 
         setNiveau(getNiveau() + 1);
-       //GrdItem.put("level" + getNiveau(), semantique);
+        //GrdItem.put("level" + getNiveau(), semantique);
         setNumberPatterns(getNumberPatterns() + semantique.size());
         isolated_matixs.clear();
         isolated_matixs = isolated_matix;
@@ -581,7 +515,6 @@ public class SGB2 extends CommonMethod {
         float support;
 
        // System.out.println(allContengent.size() + "\n");
-
         for (int i = 0; i < allContengent.size(); i++) {
             for (int j = i + 1; j < allContengent.size(); j++) {
                 String[] item_g = semantique.get(i);
@@ -630,7 +563,6 @@ public class SGB2 extends CommonMethod {
         setNiveau(niveau + 1);
 
         //GrdItem.put("level" + getNiveau(), semantiques);
-
         setNumberPatterns(getNumberPatterns() + semantiques.size());
 
         return computeAllContengent;
@@ -1146,7 +1078,6 @@ public class SGB2 extends CommonMethod {
         float support;
 
        // System.out.println(allContengent.size() + "\n");
-
         for (int i = 0; i < allContengent.size(); i++) {
             for (int j = i + 1; j < allContengent.size(); j++) {
                 //affiche(allContengent.get(i));
@@ -1205,7 +1136,6 @@ public class SGB2 extends CommonMethod {
         setNiveau(niveau + 1);
 
         //GrdItem.put("level" + getNiveau(), semantiques);
-
         setNumberPatterns(getNumberPatterns() + semantiques.size());
 
         return computeAllContengent;
@@ -1340,7 +1270,7 @@ public class SGB2 extends CommonMethod {
         // TODO Auto-generated method stub
         // float[] item = new float[9];
         //GritestrictAppr2 ap = new SGB2();
-        SGB2 ap = new SGB2(args[0]);
+        SGB2 ap = new SGB2(args);
         /*
          * ap.getconfig(); ArrayList<float[]> itemsets = ap.itemsets;
          */

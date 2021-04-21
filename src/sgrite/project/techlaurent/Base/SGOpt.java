@@ -18,7 +18,8 @@ import sgrite.project.techlaurent.Base.composants.ScriteComposant;
 import sgrite.project.techlaurent.common.CommonMethod;
 
 /**
- *Implementtaion of Method SGOpt of SGrite
+ * Implementtaion of Method SGOpt of SGrite
+ *
  * @author The class encapsulates and optimisation of implementation of the
  * Grite algorithm to compute Gradual frequent itemsets .
  * @author tabueu Fotso laurent, University of DSCHANG, 2017
@@ -76,7 +77,7 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
     ArrayList<Integer> removedindex;
     private int niveau = 0;
     private int numberPatterns = 0;
-    private String outputfile = "out_GritestrictAppr2.dat";
+    private String outputfile = "TimeSGOpt";
     double min = AppConstants.MIN;
     double max = AppConstants.MAX;
     double pas = AppConstants.STEP;
@@ -109,12 +110,13 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
 
         //  dataForDrawGraphe(min, max, pas);
     }
-/**
- * 
- * @param source
- * @param seuil
- * @throws IOException 
- */
+
+    /**
+     *
+     * @param source
+     * @param seuil
+     * @throws IOException
+     */
     public SGOpt(String[] params) throws IOException {
         super();
         this.transaFile = params[0];
@@ -136,10 +138,9 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
         // Grite.affiche(dataset);
         FileWriter fw = new FileWriter(new File(outputfile), true);
         FileWriter fw3 = new FileWriter(new File(memoryusedcsv), true);
-
         fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
         fw.flush();
-        fw.write("\n");
+        //fw.write("\n");
         fw.flush();
         exec(fw, fw3);
         //dataForDrawGraphe(min, max, pas);
@@ -203,7 +204,7 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
         for (double i = min; i <= max; i = (i + pas)) {
             threshold = i;
             exec(fw, fw3);
-            AppConstants.USEDMEMORY=0;
+            AppConstants.USEDMEMORY = 0;
             //emptyGroupSet();
 
         }
@@ -211,10 +212,10 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
     }
 
     private void emptyGroupSet() {
-       semantique.clear();
-       allContengent.clear();
-       isolated_matixs.clear();
-       
+        semantique.clear();
+        allContengent.clear();
+        isolated_matixs.clear();
+
     }
 
     /**
@@ -225,87 +226,26 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
         double startTime = System.currentTimeMillis();
         allContengent = createGradualsItemsetsOfSize1(dataset, item, a, taille);
         initialisationOfMaxMemUsed();
-        //System.out.println("1. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-        //System.out.println("1. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-
-        //GrdItem.put("level " + getNiveau(), semantique);
-        //System.out.println("level " + getNiveau() + "-------");
         printPatternConsole();
-
         //TODO 1 : create Graduals 2-Itemsets First with first item positif (write a method)
         allContengent = genGradual2Itemsets();
         initialisationOfMaxMemUsed();
-        //System.out.println("2. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-        // System.out.println("2. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-
-		// myTools.setSizeMat(allContengent.get(0).length);
-        // myTools.initMemory();
-		/*
-         * int[] memory0 = myTools.memory;
-         * System.out.println("sons elt 1: "+myTools.getRoots(allContengent.get(
-         * 0))); System.out.println("sons elt 1: "+myTools.maximumSupport(
-         * allContengent.get(0), semantique.get(0), memory0) );
-         */
-        // affiche(allContengent.get(0));
-        //GrdItem.put("level " + getNiveau(), semantique);
-        // System.out.println("level " + getNiveau() + "-------");
-        int i = 0;
-        for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-            boolean[][] is = iterator.next();
-            myTools.setSizeMat(is.length);
-            myTools.initMemory();
-            int[] memory = myTools.memory;
-            //TODO COMMENT CONSOLE PRINT
-           /* System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i)) + "( "
-             + determinerSupport1(is, memory) + " )" + " <----------- ");*/
-            // affiche(is);
-           /* System.out.println();
-             System.out.println(isolated_matixs.get(i));
-             System.out.println();
-             System.out.println("--------------------------------- size (" + is.length + " )");*/
-            i++;
-
-        }
+        printPatternConsole();
         for (int m = 1; m < attrList.length; m++) {
             allContengent = grite_execution();
             initialisationOfMaxMemUsed();
-            // System.out.println("3+ Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-            //System.out.println("3+ Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-
             if (allContengent.size() > 0) {
-                //GrdItem.put("level " + getNiveau(), semantique);
-                //  System.out.println("level " + getNiveau() + "-------");
-                // Grite.affiche(allContengent.get(0));
-                // System.out.println("---- Grite.Grite()---- " +
-                // allContengent.size() + "***" + semantique.size());
-                // System.out.println("***" + GrdItem.toString());
-
-                /* int i1 = 0;
-                for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-                    boolean[][] is1 = iterator.next();
-                    myTools.setSizeMat(is1.length);
-                    myTools.initMemory();
-                    int[] memory1 = myTools.memory;
-                    //TODO COMMENT CONSOLE PRINT
-                    // System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i1)) + "( " + determinerSupport1(is1, memory1) + " )" + " <----------- ");
-                    // affiche(is1);
-                   /* System.out.println("\n" + isolated_matixs.get(i1));
-                     System.out.println();
-                     System.out.println("---------------------------------");
-                    i1++;
-
-                }*/
-
+                printPatternConsole();
             }
         }
 
-        System.out.println("Grite.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
+        System.out.println("SGOpt.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
         double duree = (System.currentTimeMillis() - startTime);
-        System.out.println("Grite.exec() Time execution eguals :" + duree / 1000.0 + " s");
+        System.out.println("SGOpt.exec() Time execution eguals :" + duree / 1000.0 + " s");
 
-        System.out.println("Grite.exec() Memory space ");
+        System.out.println("SGOpt.exec() Memory space ");
 
-        System.out.println("Used memory is megabytes: " + AppConstants.USEDMEMORY);
+        System.out.println("Used memory is KB: " + AppConstants.USEDMEMORY);
         try {
             wrtiteStatistic(threshold, nbitems, nbtransaction, duree, getNumberPatterns(), fw2);
             wrtiteStatisticMemoryInfo(threshold, nbitems, nbtransaction, AppConstants.USEDMEMORY, getNumberPatterns(), fw3);
@@ -328,15 +268,9 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
             myTools.initMemory();
             int[] memory = myTools.memory;
             //TODO COMMENT CONSOLE PRINT
-            //System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
-            //       + myTools.maximumSupport(is/* , semantique.get(i) */, memory) + " )" + " <----------- ");
-            // affiche(is);
-           /* System.out.println();
-             System.out.println(isolated_matixs.get(i0));
-             System.out.println();
-             System.out.println("--------------------------------- size (" + is.length + " )");*/
+            System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
+                    + myTools.maximumSupport(is/* , semantique.get(i) */, memory) + " )" + " <----------- ");
             i0++;
-
         }
     }
 
@@ -352,7 +286,7 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
             FileWriter fw) throws IOException {
 
         try {
-            String sep = "        ";
+            String sep = AppConstants.SEP;
             for (int i = 0; i < attrList.length; i++) {
                 fw.write(seuil + sep + nbitems2 + sep + nbtransaction2 + sep + (duree / 1000.0) + sep + numberPatterns2
                         + "\n");
@@ -544,7 +478,7 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
                 allContengent.add(mplus);
                 semantique.add(attr1);
 
-               // initialisationOfMaxMemUsed();
+                // initialisationOfMaxMemUsed();
                 ////System.out.println("1. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
                 //System.out.println("1. Used memory is megabytes: " + MemoryPerformance.getMemoryCurrentMB());
                 // insertAnSgriteComonentAlist(scriteComposants, attr, mmoins, listobj, attr1, mplus, listobj1);       
@@ -552,7 +486,7 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
         }
         //mapOfLevelAndSgriteComponent.putIfAbsent(getNiveau()+1, scriteComposants);
         setNiveau(getNiveau() + 1);
-       //GrdItem.put("level" + getNiveau(), semantique);
+        //GrdItem.put("level" + getNiveau(), semantique);
         setNumberPatterns(getNumberPatterns() + semantique.size());
         isolated_matixs.clear();
         isolated_matixs = isolated_matix;
@@ -651,7 +585,6 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
 
         //GrdItem.put("level" + getNiveau(), semantiques);
         //  mapOfLevelAndSgriteComponent.putIfAbsent(niveau, scriteComposants);
-
         setNumberPatterns(getNumberPatterns() + semantiques.size());
 
         return computeAllContengent;
@@ -717,7 +650,6 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
         //   mapOfLevelAndSgriteComponent.putIfAbsent(niveau, scriteComposants);
 
         //GrdItem.put("level" + getNiveau(), semantiques);
-
         setNumberPatterns(getNumberPatterns() + semantiques.size());
 
         return computeAllContengent;
@@ -1257,7 +1189,7 @@ public class SGOpt extends CommonMethod implements MemoryPerformance {
         //GritestrictAppr2 ap = new GritestrictAppr2();
         /*
         
-        */
+         */
         SGOpt ap = new SGOpt(args);
         /*
          * ap.getconfig(); ArrayList<float[]> itemsets = ap.itemsets;

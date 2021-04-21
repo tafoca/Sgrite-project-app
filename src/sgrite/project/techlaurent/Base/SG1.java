@@ -17,7 +17,8 @@ import sgrite.project.techlaurent.Base.composants.ScriteComposant;
 import sgrite.project.techlaurent.common.CommonMethod;
 
 /**
- *Implementtaion of Method SG1 of SGrite
+ * Implementtaion of Method SG1 of SGrite
+ *
  * @author tabueu Fotso laurent, University of DSCHANG, 2017
  * @copyright GNU General Public License v3 No reproduction in whole or part
  * without maintaining this copyright notice and imposing this condition on any
@@ -73,14 +74,14 @@ public class SG1 extends CommonMethod {
     ArrayList<Integer> removedindex;
     private int niveau = 0;
     private int numberPatterns = 0;
-    private String outputfile = "out_GritestrictAppSG1.dat";
+    private String outputfile = "TimeSG1";
     double min = AppConstants.MIN;
     double max = AppConstants.MAX;
     double pas = AppConstants.STEP;
     // Map<Integer,List<ScriteComposant>> mapOfLevelAndSgriteComponent= new Hashtable<>();
     public String memoryusedcsv = "MemorySG1";
 
-     public SG1() throws IOException {
+    public SG1() throws IOException {
         super();
         myTools = new Tools();
         myTools.initParameter(transafile);
@@ -102,17 +103,17 @@ public class SG1 extends CommonMethod {
         fw.write("\n");
         fw.flush();
         FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
-       exec(fw, fw3);
+        exec(fw, fw3);
 
         //dataForDrawGraphe(min, max, pas);
     }
 
-    public SG1(String source) throws IOException {
+    public SG1(String[] params) throws IOException {
         super();
-        this.transaFile = source;
+        this.transaFile = params[0];
         myTools = new Tools();
         //System.out.println("sgrite.project.techlaurent.Base.GritestrictAppr2.<init>()"+ source);
-        myTools.initParameter(source);
+        myTools.initParameter(params[0]);
         taille = myTools.nbTransaction;
         this.nbtransaction = myTools.nbTransaction;
         nbitems = myTools.itemNembers;
@@ -120,7 +121,7 @@ public class SG1 extends CommonMethod {
         GrdItem = new SolutionMap();
         // construct db
         getconfig();
-        this.itemsets = getDataSet(source);
+        this.itemsets = getDataSet(params[0]);
         // end of construction db
         this.item = null;
         this.dataset = SG1.duplique(itemsets);
@@ -128,12 +129,13 @@ public class SG1 extends CommonMethod {
         FileWriter fw = new FileWriter(new File(outputfile), true);
         fw.write("seuil" + AppConstants.SEP + "items" + AppConstants.SEP + "transaction" + AppConstants.SEP + "duree" + AppConstants.SEP + "nombre de motif" + "\n");
         fw.flush();
-        fw.write("\n");
+        //fw.write("\n");
         fw.flush();
+        threshold = Double.parseDouble(params[1]);
         FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
-        //exec(fw,fw3);
+        exec(fw, fw3);
 
-        dataForDrawGraphe(min, max, pas);
+        // dataForDrawGraphe(min, max, pas);
     }
 
     public boolean[][] transposition(boolean[][] adjm) {
@@ -194,17 +196,18 @@ public class SG1 extends CommonMethod {
         for (double i = min; i <= max; i = (i + pas)) {
             threshold = i;
             exec(fw, fw3);
-            AppConstants.USEDMEMORY=0;
-           // emptyGroupSet();
+            AppConstants.USEDMEMORY = 0;
+            // emptyGroupSet();
 
         }
         fw.close();
     }
+
     private void emptyGroupSet() {
-       semantique.clear();
-       allContengent.clear();
-       isolated_matixs.clear();
-       
+        semantique.clear();
+        allContengent.clear();
+        isolated_matixs.clear();
+
     }
 
     /**
@@ -215,79 +218,22 @@ public class SG1 extends CommonMethod {
         double startTime = System.currentTimeMillis();
         allContengent = createGradualsItemsetsOfSize1(dataset, item, a, taille);
         initialisationOfMaxMemUsed();
-        //System.out.println("1. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-        //System.out.println("1. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-        //GrdItem.put("level " + getNiveau(), semantique);
-        //System.out.println("level " + getNiveau() + "-------");
         printPatternConsole();
-
         //TODO 1 : create Graduals 2-Itemsets First with first item positif (write a method)
         allContengent = genGradual2Itemsets();
         initialisationOfMaxMemUsed();
-        //System.out.println("2. Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-        // System.out.println("2. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
-
-		// myTools.setSizeMat(allContengent.get(0).length);
-        // myTools.initMemory();
-		/*
-         * int[] memory0 = myTools.memory;
-         * System.out.println("sons elt 1: "+myTools.getRoots(allContengent.get(
-         * 0))); System.out.println("sons elt 1: "+myTools.maximumSupport(
-         * allContengent.get(0), semantique.get(0), memory0) );
-         */
-        // affiche(allContengent.get(0));
-        //GrdItem.put("level " + getNiveau(), semantique);
-        // System.out.println("level " + getNiveau() + "-------");
-//        int i = 0;
-//        for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-//            boolean[][] is = iterator.next();
-//            myTools.setSizeMat(is.length);
-//            myTools.initMemory();
-//            int[] memory = myTools.memory;
-//            //TODO COMMENT CONSOLE PRINT
-//           /* System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i)) + "( "
-//             + determinerSupport1(is, memory) + " )" + " <----------- ");*/
-//            // affiche(is);
-//           /* System.out.println();
-//             System.out.println(isolated_matixs.get(i));
-//             System.out.println();
-//             System.out.println("--------------------------------- size (" + is.length + " )");*/
-//            i++;
-//
-//        }
+        printPatternConsole();
         for (int m = 1; m < attrList.length; m++) {
             allContengent = grite_execution();
             initialisationOfMaxMemUsed();
-        //System.out.println("3+ Used memory is bytes: " + MemoryPerformance.getMemoryCurrent());
-            //System.out.println("3+. Used memory is megabytes: "+ MemoryPerformance.getMemoryCurrentMB());
             if (allContengent.size() > 0) {
-                //GrdItem.put("level " + getNiveau(), semantique);
-                //  System.out.println("level " + getNiveau() + "-------");
-                // Grite.affiche(allContengent.get(0));
-                // System.out.println("---- Grite.Grite()---- " +
-                // allContengent.size() + "***" + semantique.size());
-                // System.out.println("***" + GrdItem.toString());
-
-               /* int i1 = 0;
-                for (Iterator<boolean[][]> iterator = (allContengent).iterator(); iterator.hasNext();) {
-                    boolean[][] is1 = iterator.next();
-                    myTools.setSizeMat(is1.length);
-                    myTools.initMemory();
-                    int[] memory1 = myTools.memory;
-                    //TODO COMMENT CONSOLE PRINT
-                    // System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i1)) + "( " + determinerSupport1(is1, memory1) + " )" + " <----------- ");
-                    // affiche(is1);
-                   /* System.out.println("\n" + isolated_matixs.get(i1));
-                     System.out.println();
-                     System.out.println("---------------------------------");
-                    i1++;
-
-                }*/
-
+                if (allContengent.size() > 0) {
+                    printPatternConsole();
+                }
             }
         }
 
-        System.out.println("Grite.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
+        System.out.println("SG1.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
         double duree = (System.currentTimeMillis() - startTime);
         System.out.println("Grite.exec() Time execution eguals :" + duree / 1000.0 + " s");
         System.out.println("Grite.exec() Memory space ");
@@ -314,15 +260,10 @@ public class SG1 extends CommonMethod {
             myTools.initMemory();
             int[] memory = myTools.memory;
             //TODO COMMENT CONSOLE PRINT
-            //System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
-            //       + myTools.maximumSupport(is/* , semantique.get(i) */, memory) + " )" + " <----------- ");
-            // affiche(is);
-           /* System.out.println();
-             System.out.println(isolated_matixs.get(i0));
-             System.out.println();
-             System.out.println("--------------------------------- size (" + is.length + " )");*/
+            System.out.println(" -------> " + myTools.printGrad_Itemset(semantique.get(i0)) + "( "
+                    + myTools.maximumSupport(is/* , semantique.get(i) */, memory) + " )" + " <----------- ");
+            System.out.println();
             i0++;
-
         }
     }
 
@@ -338,7 +279,7 @@ public class SG1 extends CommonMethod {
             FileWriter fw) throws IOException {
 
         try {
-            String sep = "        ";
+            String sep = AppConstants.SEP;
             for (int i = 0; i < attrList.length; i++) {
                 fw.write(seuil + sep + nbitems2 + sep + nbtransaction2 + sep + (duree / 1000.0) + sep + numberPatterns2
                         + "\n");
@@ -535,7 +476,7 @@ public class SG1 extends CommonMethod {
         }
         //mapOfLevelAndSgriteComponent.putIfAbsent(getNiveau()+1, scriteComposants);
         setNiveau(getNiveau() + 1);
-       //GrdItem.put("level" + getNiveau(), semantique);
+        //GrdItem.put("level" + getNiveau(), semantique);
         setNumberPatterns(getNumberPatterns() + semantique.size());
         isolated_matixs.clear();
         isolated_matixs = isolated_matix;
@@ -631,7 +572,6 @@ public class SG1 extends CommonMethod {
 
         //GrdItem.put("level" + getNiveau(), semantiques);
         //  mapOfLevelAndSgriteComponent.putIfAbsent(niveau, scriteComposants);
-
         setNumberPatterns(getNumberPatterns() + semantiques.size());
 
         return computeAllContengent;
@@ -695,7 +635,6 @@ public class SG1 extends CommonMethod {
         //   mapOfLevelAndSgriteComponent.putIfAbsent(niveau, scriteComposants);
 
         //GrdItem.put("level" + getNiveau(), semantiques);
-
         setNumberPatterns(getNumberPatterns() + semantiques.size());
 
         return computeAllContengent;
@@ -1233,7 +1172,7 @@ public class SG1 extends CommonMethod {
         // TODO Auto-generated method stub
         // float[] item = new float[9];
         //GritestrictAppSG1 ap = new GritestrictAppSG1();
-        SG1 ap = new SG1(args[0]);
+        SG1 ap = new SG1(args);
         /*
          * ap.getconfig(); ArrayList<float[]> itemsets = ap.itemsets;
          */
