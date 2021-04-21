@@ -130,9 +130,17 @@ public class SGB2 extends CommonMethod {
         //fw.write("\n");
         fw.flush();
         threshold = Double.parseDouble(params[1]);
-        FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
-        exec(fw, fw3);
-        //dataForDrawGraphe(min, max, pas);
+       if (params.length <= 2) {
+            threshold = Double.parseDouble(params[1]);
+            FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
+            exec(fw, fw3);
+        } else {
+            min= Double.parseDouble(params[1]);
+            max = Double.parseDouble(params[2]);
+            pas = Double.parseDouble(params[3]);
+            dataForDrawGraphe(min, max, pas);
+        }
+
     }
 
     public boolean[][] transposition(boolean[][] adjm) {
@@ -225,11 +233,10 @@ public class SGB2 extends CommonMethod {
                 printPatternConsole();
             }
         }
-        System.out.println("SGB2.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
+        System.out.println("SGB2.exec(), number of gradual patterns extracted:" + getNumberPatterns());
         double duree = (System.currentTimeMillis() - startTime);
-        System.out.println("SGB2.exec() Time execution eguals :" + duree / 1000.0 + " s");
-        System.out.println("SGB2.exec() Memory space ");
-        System.out.println("Used memory is KB: " + AppConstants.USEDMEMORY);
+        System.out.println("SGB2.exec() execution time (s) :" + duree / 1000.0 + " s");
+        System.out.println("memory usage (KB) : " + AppConstants.USEDMEMORY);
         try {
             wrtiteStatistic(threshold, nbitems, nbtransaction, duree, getNumberPatterns(), fw2);
             wrtiteStatisticMemoryInfo(threshold, nbitems, nbtransaction, AppConstants.USEDMEMORY, getNumberPatterns(), fw3);

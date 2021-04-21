@@ -108,11 +108,11 @@ public class SGB1 extends CommonMethod {
 
         //dataForDrawGraphe(min, max, pas);
     }
-    public SGB1(String source) throws IOException {
+    public SGB1(String[] params) throws IOException {
         super();
-        this.transaFile = source;
+        this.transaFile = params[0];
         myTools = new Tools();
-        myTools.initParameter(source);
+        myTools.initParameter(params[0]);
         taille = myTools.getNbTransaction();
         this.nbtransaction = myTools.getNbTransaction();;
         nbitems = myTools.getItemNembers();
@@ -120,7 +120,7 @@ public class SGB1 extends CommonMethod {
         GrdItem = new SolutionMap();
         // construct db
         getconfig();
-        this.itemsets = getDataSet(source);
+        this.itemsets = getDataSet(params[0]);
         // end of construction db
         this.item = null;
         this.dataset = SGB1.duplique(itemsets);
@@ -130,9 +130,16 @@ public class SGB1 extends CommonMethod {
         fw.flush();
       //  fw.write("\n");
         fw.flush();
-        FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
-        exec(fw,fw3);
-        //dataForDrawGraphe(min, max, pas);
+         if (params.length <= 2) {
+            threshold = Double.parseDouble(params[1]);
+            FileWriter fw3 = new FileWriter(new File(memoryusedcsv));
+            exec(fw, fw3);
+        } else {
+            min= Double.parseDouble(params[1]);
+            max = Double.parseDouble(params[2]);
+            pas = Double.parseDouble(params[3]);
+            dataForDrawGraphe(min, max, pas);
+        }
     }
     public boolean[][] transposition(boolean[][] adjm) {
 
@@ -229,11 +236,10 @@ public class SGB1 extends CommonMethod {
                 printPatternConsole();
             }
         }
-        System.out.println("SGB1.exec(), nombre total de motif extrait est de :" + getNumberPatterns());
+        System.out.println("SGB1.exec(), number of gradual patterns extracted:" + getNumberPatterns());
         double duree = (System.currentTimeMillis() - startTime);
-        System.out.println("SGB1.exec() Time execution eguals :" + duree / 1000.0 + " s");
-        System.out.println("SGB1.exec() Memory space ");
-        System.out.println("Used memory is KB: " + AppConstants.USEDMEMORY);
+        System.out.println("SGB1.exec() execution time (s) :" + duree / 1000.0 + "");
+        System.out.println("Memory usage (KB) : " + AppConstants.USEDMEMORY);
         try {
             wrtiteStatistic(threshold, nbitems, nbtransaction, duree, getNumberPatterns(), fw2);
             wrtiteStatisticMemoryInfo(threshold, nbitems, nbtransaction, AppConstants.USEDMEMORY, getNumberPatterns(), fw3);
@@ -1288,7 +1294,7 @@ public class SGB1 extends CommonMethod {
         // TODO Auto-generated method stub
         // float[] item = new float[9];
         //GritestrictAppr2 ap = new GritestrictAppr2();
-        SGB1 ap = new SGB1(args[0]);
+        SGB1 ap = new SGB1(args);
 
         /*
          * ap.getconfig(); ArrayList<float[]> itemsets = ap.itemsets;
